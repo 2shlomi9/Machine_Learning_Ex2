@@ -7,20 +7,33 @@ def euclidean_distance(point1, point2):
 
 def found_margin(a, b, c):
     # Found the vector ab
-    vector = np.array([b[0]-a[0],b[1]-a[1]])
+    vector = np.array([b[0] - a[0], b[1] - a[1]])
     # Found ortogonaly vector of ab
-    perpendicular_vector = np.array([vector[1],-vector[0]])
+    perpendicular_vector = np.array([vector[1], -vector[0]])
     # Perpendicular vector length
     magnitude_vec = np.linalg.norm(perpendicular_vector)
-    # Noramlization the Perpendicular vector
-    perpendicular_vector[0] = perpendicular_vector[0]/magnitude_vec
-    perpendicular_vector[1] = perpendicular_vector[1]/magnitude_vec
-    # Found the projection of point c on Perpendicular vector (distance)
-    distance_to_line = abs(np.dot(c, perpendicular_vector))
+    # Normalize the perpendicular vector
+    normalized_perpendicular = perpendicular_vector / magnitude_vec
+    # Shift point c relative to point a
+    shifted_c = np.array([c[0] - a[0], c[1] - a[1]])
+    # Found the projection of shifted c on the perpendicular vector (distance)
+    distance_to_line = abs(np.dot(shifted_c, normalized_perpendicular))
     # The true margin
     margin = distance_to_line / 2
 
     return margin
+
+def is_point_in_margin(point, a, b, margin):
+    # Calculate the margin from point to the line defined by a and b
+    vector = np.array([b[0] - a[0], b[1] - a[1]])
+    perpendicular_vector = np.array([vector[1], -vector[0]])
+    magnitude_vec = np.linalg.norm(perpendicular_vector)
+    normalized_perpendicular = perpendicular_vector / magnitude_vec
+    
+    shifted_point = np.array([point[0] - a[0], point[1] - a[1]])
+    distance_to_line = abs(np.dot(shifted_point, normalized_perpendicular))
+    
+    return distance_to_line <= margin
 
 def brute_force(data_1,data_2):
     
@@ -58,9 +71,8 @@ def brute_force(data_1,data_2):
                     b = data_1[j]
                     c = data_2[k]
 
-    return found_margin(a, b, c)
+    return found_margin(a, b, c), a,b,c
 
-                
 
 def perceptron(data_1, data_2):
     

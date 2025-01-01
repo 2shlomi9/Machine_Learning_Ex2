@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Perceptron import perceptron, brute_force
-
+from Perceptron import perceptron, brute_force, found_margin
+from svm import svm_s
 
 
 def main(data_txt):
@@ -24,10 +24,26 @@ def main(data_txt):
     c. Versicolor and Virginica
 
     """
+    a = [5,10]
+    b = [5,6]
+    c = [2,14]
+
+    print(found_margin(a,b,c))
 
     # Read and write data from file to np array
     setosa, versicolor, virginica = write_from_file(data_txt)
-
+    # X = []
+    # X = setosa[:,0]
+    # for i in range (versicolor.shape[0]):
+    #     for j in range(versicolor.shape[1]):
+    #         X.append(versicolor[i,0])
+    # X = np.concatenate((setosa[:, 0], versicolor[:, 0]))
+    # Y = np.concatenate((setosa[:, 1], versicolor[:, 1]))
+    # X.reshape(1, -1)
+    # Y.reshape(1, -1)
+    # print(X)
+    # print(Y)
+    # svm_s(X, Y)
     # Perceptron on Setosa and Versicolor
     print("a - Perceptron on Setosa and Versicolor :")
     w, num_of_mistakes = perceptron(setosa, versicolor) 
