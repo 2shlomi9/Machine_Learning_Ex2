@@ -23,17 +23,53 @@ def found_margin(a, b, c):
 
     return margin
 
-def is_point_in_margin(point, a, b, margin):
+def is_point_in_margin(data_1, data_2, a, b, margin):
     # Calculate the margin from point to the line defined by a and b
     vector = np.array([b[0] - a[0], b[1] - a[1]])
     perpendicular_vector = np.array([vector[1], -vector[0]])
     magnitude_vec = np.linalg.norm(perpendicular_vector)
     normalized_perpendicular = perpendicular_vector / magnitude_vec
     
-    shifted_point = np.array([point[0] - a[0], point[1] - a[1]])
-    distance_to_line = abs(np.dot(shifted_point, normalized_perpendicular))
+    for i in range(len(data_1)):
+        shifted_point = np.array([data_1[0] - a[0], data_1[1] - a[1]])
+        distance_to_line = abs(np.dot(shifted_point, normalized_perpendicular))
+    if distance_to_line < margin:
+        return False
+        
+    for i in range(len(data_2)):
+        shifted_point = np.array([data_2[0] - a[0], data_2[1] - a[1]])
+        distance_to_line = abs(np.dot(shifted_point, normalized_perpendicular))
+    if distance_to_line < margin:
+        return False
+    return True
+
+# def is_point_in_margin(data_1, data_2, margin, a, b, c):
+#     vector = np.array([b[0] - a[0], b[1] - a[1]])
+#     w = np.array([vector[1], -vector[0]])
+#     side = np.dot(c, w)
+
+#     if side < 0 :
+#         y1 = -np.full(data_1.shape[0], margin)  
+#         y2 = np.full(data_2.shape[0], margin)
+#     elif side > 0:
+#         y1 = np.full(data_1.shape[0], margin)  
+#         y2 = -np.full(data_2.shape[0], margin)  
+
+#     n = data_1.shape[0] + data_2.shape[0]  # Number of samples
+
+#     X = np.vstack((data_1, data_2))  # Merging the two sets
+#     Y = np.concatenate((y1, y2))  # Merge labels
+
+#     is_true_margin = True
+
+#     for i in range(n):
+#         if np.dot(w, X[i]) < margin and Y[i]:
+#             is_true_margin = False
     
-    return distance_to_line <= margin
+#     return is_true_margin
+
+
+
 
 def brute_force(data_1,data_2):
     
@@ -43,18 +79,20 @@ def brute_force(data_1,data_2):
     a = np.zeros(data_1.shape[1])
     b = np.zeros(data_1.shape[1])
     c = np.zeros(data_1.shape[1])
-
+#euclidean_distance(data_1[i], data_2[k]) + euclidean_distance(data_1[j], data_2[k])
     # Try all combinations of 3 points such that two points belong to data_1 and one to data_2.
     for i in range(len(data_1)):
         for j in range(i+1, len(data_1)):
             for k in range(len(data_2)):
-                tmp_dist = euclidean_distance(data_1[i], data_2[k]) + euclidean_distance(data_1[j], data_2[k])
+                tmp_dist = found_margin(data_1[i],data_1[j],data_2[k])
+                # tmp_dist = euclidean_distance(data_1[i], data_2[k]) + euclidean_distance(data_1[j], data_2[k])
+                is_true = is_point_in_margin(data_1, data_2,data_1[i],data_1[j], tmp_dist)
                 if i==0 and j==1 and k==0:
                     min_dist = tmp_dist
                     a = data_1[i]
                     b = data_1[j]
                     c = data_2[k]
-                elif tmp_dist < min_dist:
+                elif tmp_dist < min_dist and tmp_dist != 0 and is_true:
                     min_dist = tmp_dist
                     a = data_1[i]
                     b = data_1[j]
@@ -64,8 +102,10 @@ def brute_force(data_1,data_2):
     for i in range(len(data_2)):
         for j in range(i+1, len(data_2)):
             for k in range(len(data_1)):
-                tmp_dist = euclidean_distance(data_2[i], data_1[k]) + euclidean_distance(data_2[j], data_1[k])
-                if tmp_dist < min_dist:
+                tmp_dist = found_margin(data_2[i],data_2[j],data_1[k])
+                is_true = is_point_in_margin(data_2, data_1, data_2[i],data_2[j], tmp_dist)
+                # tmp_dist = euclidean_distance(data_2[i], data_1[k]) + euclidean_distance(data_2[j], data_1[k])
+                if tmp_dist < min_dist and tmp_dist != 0 and is_true == False:
                     min_dist = tmp_dist
                     a = data_1[i]
                     b = data_1[j]

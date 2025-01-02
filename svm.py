@@ -1,72 +1,62 @@
-# Code source: Gaël Varoquaux
-# Modified for documentation by Jaques Grobler
-# License: BSD 3 clause
-
+from sklearn import svm
 import matplotlib.pyplot as plt
 import numpy as np
 
-from sklearn import svm
-def svm_s(X,Y):
-    
-    # figure number
-    fignum = 1
+def svm_s(data_1, data_2):
+    """
+    SVM with linear kernel for two datasets.
 
-    # fit the model
-    for name, penalty in (("unreg", 1), ("reg", 0.05)):
-        clf = svm.SVC(kernel="linear", C=penalty)
-        clf.fit(X, Y)
+    Parameters:
+    data_1: numpy array of shape (n_samples1, n_features) - First class
+    data_2: numpy array of shape (n_samples2, n_features) - Second class
 
-        # get the separating hyperplane
-        w = clf.coef_[0]
-        a = -w[0] / w[1]
-        xx = np.linspace(-5, 5)
-        yy = a * xx - (clf.intercept_[0]) / w[1]
+    Returns:
+    clf: Trained SVM model
+    """
+    # Labels for the two classes
+    y1 = np.ones(data_1.shape[0])  # Class 1 labels
+    y2 = -np.ones(data_2.shape[0])  # Class 2 labels
 
-        # plot the parallels to the separating hyperplane that pass through the
-        # support vectors (margin away from hyperplane in direction
-        # perpendicular to hyperplane). This is sqrt(1+a^2) away vertically in
-        # 2-d.
-        margin = 1 / np.sqrt(np.sum(clf.coef_**2))
-        yy_down = yy - np.sqrt(1 + a**2) * margin
-        yy_up = yy + np.sqrt(1 + a**2) * margin
+    # Combine the data and labels
+    X = np.vstack((data_1, data_2))
+    Y = np.concatenate((y1, y2))
 
-        # plot the line, the points, and the nearest vectors to the plane
-        plt.figure(fignum, figsize=(4, 3))
-        plt.clf()
-        plt.plot(xx, yy, "k-")
-        plt.plot(xx, yy_down, "k--")
-        plt.plot(xx, yy_up, "k--")
+    # Train SVM with linear kernel
+    clf = svm.SVC(kernel='linear', C=1.0)
+    clf.fit(X, Y)
 
-        plt.scatter(
-            clf.support_vectors_[:, 0],
-            clf.support_vectors_[:, 1],
-            s=80,
-            facecolors="none",
-            zorder=10,
-            edgecolors="k",
-        )
-        plt.scatter(
-            X[:, 0], X[:, 1], c=Y, zorder=10, cmap=plt.get_cmap("RdBu"), edgecolors="k"
-        )
+    # Plot decision boundary and margin
+    plt.figure(figsize=(8, 6))
 
-        plt.axis("tight")
-        x_min = -4.8
-        x_max = 4.2
-        y_min = -6
-        y_max = 6
+    # Scatter plot of the two datasets
+    plt.scatter(data_1[:, 0], data_1[:, 1], color='red', label='Class 1', s=30)
+    plt.scatter(data_2[:, 0], data_2[:, 1], color='blue', label='Class 2', s=30)
 
-        YY, XX = np.meshgrid(yy, xx)
-        xy = np.vstack([XX.ravel(), YY.ravel()]).T
-        Z = clf.decision_function(xy).reshape(XX.shape)
+    # Get separating hyperplane
+    w = clf.coef_[0]
+    a = -w[0] / w[1]
+    xx = np.linspace(min(X[:, 0]) - 1, max(X[:, 0]) + 1)
+    yy = a * xx - clf.intercept_[0] / w[1]
 
-        # Put the result into a contour plot
-        plt.contourf(XX, YY, Z, cmap=plt.get_cmap("RdBu"), alpha=0.5, linestyles=["-"])
+    # Plot the separating hyperplane
+    plt.plot(xx, yy, 'k-', label='Decision boundary')
 
-        plt.xlim(x_min, x_max)
-        plt.ylim(y_min, y_max)
+    # Plot margin
+    margin = 1 / np.sqrt(np.sum(clf.coef_ ** 2))
+    yy_down = yy - np.sqrt(1 + a ** 2) * margin
+    yy_up = yy + np.sqrt(1 + a ** 2) * margin
+    plt.plot(xx, yy_down, 'k--', label='Margin')
+    plt.plot(xx, yy_up, 'k--')
 
-        plt.xticks(())
-        plt.yticks(())
-        fignum = fignum + 1
+    # Highlight support vectors
+    plt.scatter(clf.support_vectors_[:, 0], clf.support_vectors_[:, 1], 
+                s=100, facecolors='none', edgecolors='k', label='Support Vectors')
 
+    plt.xlabel('Feature 1')
+    plt.ylabel('Feature 2')
+    plt.title('SVM Decision Boundary')
+    plt.legend()
+    plt.grid()
     plt.show()
+
+    return margin

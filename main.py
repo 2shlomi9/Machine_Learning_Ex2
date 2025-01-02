@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Perceptron import perceptron, brute_force, found_margin
 from svm import svm_s
+from Adaboost import adaboost, run_adaboost_multiple_times
 
 
 def main(data_txt):
@@ -32,18 +33,20 @@ def main(data_txt):
 
     # Read and write data from file to np array
     setosa, versicolor, virginica = write_from_file(data_txt)
-    # X = []
-    # X = setosa[:,0]
-    # for i in range (versicolor.shape[0]):
-    #     for j in range(versicolor.shape[1]):
-    #         X.append(versicolor[i,0])
-    # X = np.concatenate((setosa[:, 0], versicolor[:, 0]))
-    # Y = np.concatenate((setosa[:, 1], versicolor[:, 1]))
-    # X.reshape(1, -1)
-    # Y.reshape(1, -1)
-    # print(X)
-    # print(Y)
-    # svm_s(X, Y)
+
+    selected_h, alpha, emp_errors, true_errors = adaboost(versicolor, virginica)
+
+    print("Selected hypotheses weights:", alpha)
+    print("Empirical errors:", emp_errors)
+    print("True errors:", true_errors)
+
+    # avg_empirical_errors, avg_true_errors = run_adaboost_multiple_times(versicolor, virginica)
+
+    # print("Empirical errors:", avg_empirical_errors)
+    # print("True errors:", avg_true_errors)
+
+
+    print(svm_s(setosa, versicolor))
     # Perceptron on Setosa and Versicolor
     print("a - Perceptron on Setosa and Versicolor :")
     w, num_of_mistakes = perceptron(setosa, versicolor) 
@@ -55,15 +58,17 @@ def main(data_txt):
     print(f'Number of mistakes : {num_of_mistakes}')
     print(f'True maximum margin : {c}')
 
-    # # Perceptron on Setosa and virginica
-    # print("b - Perceptron on Setosa and virginica :")
-    # w, num_of_mistakes = perceptron(setosa, virginica)
-    # c = brute_force(setosa, virginica)
-    
-    # plot_results(setosa, 'setosa', virginica, 'virginica', w)
-    # print(f'Final weights vector : {w}')
-    # print(f'Number of mistakes : {num_of_mistakes}')
-    # print(f'True maximum margin : {c}')
+    # Perceptron on Setosa and virginica
+    print("b - Perceptron on Setosa and virginica :")
+    w, num_of_mistakes = perceptron(setosa, virginica)
+    c, a, b, d = brute_force(setosa, virginica)
+    print(svm_s(setosa, virginica))
+
+    plot_results(setosa, 'setosa', virginica, 'virginica', w, a, b, d, False, c)
+    plot_results(setosa, 'setosa', virginica, 'virginica', w, a, b, d, True, c)
+    print(f'Final weights vector : {w}')
+    print(f'Number of mistakes : {num_of_mistakes}')
+    print(f'True maximum margin : {c}')
 
     # # Perceptron on versicolor and virginica
     # print("c - Perceptron on versicolor and virginica :")
